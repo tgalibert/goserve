@@ -2,29 +2,44 @@ package network
 
 import (
 	"fmt"
-	"io"
+	"strings"
 )
 
 type Request struct {
-	Raw  io.Reader
-	Json string
+	RequestLines	[]string
 }
 
-func NewRequest(raw io.Reader) *Request {
+type RequestMethod string
+
+const (
+	GET	RequestMethod = "GET"
+	POST RequestMethod = "POST"
+	PUT RequestMethod = "PUT"
+	DELETE RequestMethod = "DELETE"
+	OPTION RequestMethod = "OPTION"
+	PATCH RequestMethod = "PATCH"
+	UNKNOW RequestMethod = ""
+)
+
+func NewRequest(requestLines []string) *Request {
 	return &Request{
-		Raw: raw,
+		RequestLines: requestLines,
 	}
 }
 
 func (r *Request) Parse() {
-	b := make([]byte, 8)
-	var full_request = ""
-	for {
-		n, err :=r.Raw.Read(b)
-		full_request = fmt.Sprintf("%s%s", full_request, string(b[:n]))
-		if err == io.EOF {
-			break
-		}
+	method := r.retrieveMethod()
+	fmt.Println(method)
+}
+
+func (r *Request) retrieveMethod() RequestMethod {
+	if len(r.RequestLines)  < 1 {
+		return UNKNOW
 	}
-	fmt.Println(full_request)
+	first := r.RequestLines[0]
+	splitted := strings.SplitN(first, " ", -1)
+	if len(splitted) < 1 {
+		return UNKNOW
+	}
+	return RequestMethod(splitted[0])
 }

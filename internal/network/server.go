@@ -2,6 +2,7 @@ package network
 
 import (
 	"fmt"
+	"goserve/internal/network/lib"
 	"io"
 	"net"
 )
@@ -27,7 +28,7 @@ func (s *Server) Start() error {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Printf(err.Error())
+			fmt.Println(err.Error())
 			continue
 		}
 		go s.handleConnection(conn)
@@ -36,7 +37,12 @@ func (s *Server) Start() error {
 
 func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
+
 	raw := io.Reader(conn)
-	request := NewRequest(raw)
+	parser := lib.NewIoParser(raw)
+	
+	rpretty := parser.ReadString("\r\n")
+	
+	request := NewRequest(rpretty)
 	request.Parse()
 }

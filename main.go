@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	server := network.NewServer(8000)
+	server := network.NewServer(8002)
 
 	err := server.Start()
 
