@@ -65,7 +65,7 @@ _L'objectif est d'établir l'écoute réseau et d'isoler chaque connexion._
 
 _L'objectif est de convertir le flux d'octets brut reçu en une structure Go `Request` exploitable._
 
-- [ ] **2.1 Découpage des lignes** : Utiliser un lecteur tamponné (`bufio.Reader`) pour lire ligne par ligne en respectant le délimiteur `\r\n` (CRLF).
+- [x] **2.1 Découpage des lignes** : Utiliser un lecteur tamponné (`bufio.Reader`) pour lire ligne par ligne en respectant le délimiteur `\r\n` (CRLF).
 - [ ] **2.2 Parsing de la Request Line** :
   - Extraire la **Méthode** (`GET`, `POST`, `OPTIONS`, etc.).
   - Extraire le **Chemin** (`/`, `/api/items`) et séparer les éventuels _Query Parameters_ (`?key=value`).
