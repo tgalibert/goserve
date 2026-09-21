@@ -1,12 +1,13 @@
 package network
 
 import (
-	"fmt"
 	"strings"
 )
 
 type Request struct {
 	RequestLines	[]string
+	Method	RequestMethod
+	path	string
 }
 
 type RequestMethod string
@@ -28,18 +29,30 @@ func NewRequest(requestLines []string) *Request {
 }
 
 func (r *Request) Parse() {
-	method := r.retrieveMethod()
-	fmt.Println(method)
+	r.retrieveMethod()
+	r.retrieveRoutePath()
 }
 
-func (r *Request) retrieveMethod() RequestMethod {
+func (r *Request) retrieveMethod() {
 	if len(r.RequestLines)  < 1 {
-		return UNKNOW
+		r.Method = UNKNOW
 	}
 	first := r.RequestLines[0]
 	splitted := strings.SplitN(first, " ", -1)
 	if len(splitted) < 1 {
-		return UNKNOW
+		r.Method = UNKNOW
 	}
-	return RequestMethod(splitted[0])
+	r.Method = RequestMethod(splitted[0])
+}
+
+func (r *Request) retrieveRoutePath() string {
+	if len(r.RequestLines)  < 1 {
+		r.path = ""
+	}
+	first := r.RequestLines[0]
+	splitted := strings.SplitN(first, " ", -1)
+	if len(splitted) < 1 {
+		r.path = ""
+	}
+		r.path = splitted[1]
 }
