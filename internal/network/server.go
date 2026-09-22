@@ -41,8 +41,9 @@ func (s *Server) handleConnection(conn net.Conn) {
 	raw := io.Reader(conn)
 	parser := lib.NewIoParser(raw)
 	
-	rpretty := parser.ReadString("\r\n")
-	
-	request := NewRequest(rpretty)
-	request.Parse()
+	request := NewRequest(parser)
+	err := request.Parse()
+	if err != nil {
+		fmt.Printf(err.Error())
+	}
 }

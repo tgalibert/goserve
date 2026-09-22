@@ -1,46 +1,52 @@
 package lib
 
 import (
+	"bytes"
 	"io"
-	"strings"
 )
 
 type IoParser struct {
 	Raw	io.Reader
+	buf []byte
 }
 
 func NewIoParser(raw io.Reader) *IoParser {
 	return &IoParser{
 		Raw: raw,
+		buf: make([]byte,0),
 	}
 }
 
-func (i *IoParser) ReadString(delimiter ...string) []string {
-	buffer := make([]byte, 1024)
-	var sb strings.Builder
-
+func (i *IoParser) ReadLine(delimiter ...string) (string, error) {
+	temp := make([]byte, 4096)
 	for {
-		n, err :=i.Raw.Read(buffer)
-
-		if n > 0 {
-			sb.Write(buffer[:n])
+		idx := bytes.Index(i.buf, []byte("\r\n"))
+		if idx > -1 {
+			line := string(i.buf[:idx])
+			i.buf = i.buf[idx + 2:]
+			return line, nil
 		}
-		content := sb.String()
+		n, err := i.Raw.Read(temp)
+		i.buf = append(i.buf, temp[:n]...)		
 
-		if strings.Contains(content, "\r\n\r\n") {                                                                                                          
-			break                                                                                                                                               
-		}                                                                                                                                                   
-                                                                                                                                                         
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
+			return "", err
 		}
-
 	}
-	if len(delimiter) > 0 && delimiter[0] != "" {
-		return strings.SplitN(sb.String(), delimiter[0], -1)
-	} else {
-		return []string{sb.String()}
+}
+
+func (i *IoParser) ReadBytes(length int) ([]byte, error) {
+	temp := make([]byte, 4096)
+	for {
+		if len(i.buf) >= length {
+			body := i.buf[:length]
+			i.buf = i.buf[length:]
+			return body, nil
+		}
+		n, err := i.Raw.Read(temp)
+		i.buf = append(i.buf, temp[:n]...)
+		if err != nil {
+			return nil, err
+		}
 	}
 }
