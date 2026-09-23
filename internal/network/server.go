@@ -2,7 +2,7 @@ package network
 
 import (
 	"fmt"
-	"goserve/internal/network/lib"
+	"goserve/internal/lib"
 	"io"
 	"net"
 )
@@ -46,4 +46,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	if err != nil {
 		fmt.Printf(err.Error())
 	}
+	res := NewResponse()
+	res.SetBody([]byte("Hello World !"))
+	err = res.WriteTo(conn)
 }

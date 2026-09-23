@@ -85,13 +85,13 @@ _L'objectif est de convertir le flux d'octets brut reçu en une structure Go `Re
 
 _L'objectif est de formater et envoyer une réponse conforme aux spécifications._
 
-- [ ] **3.1 Modélisation de la Réponse** : Définir une structure `Response` (statut, headers, body).
-- [ ] **3.2 Formatage du protocole** :
+- [x] **3.1 Modélisation de la Réponse** : Définir une structure `Response` (statut, headers, body).
+- [x] **3.2 Formatage du protocole** :
   - **Status Line** : `HTTP/1.1 <Code> <Raison>\r\n` (ex: `HTTP/1.1 200 OK\r\n`).
   - **Headers** : Écrire chaque en-tête suivi de `\r\n`.
   - **Séparateur obligatoire** : Écrire une ligne vide supplémentaire (`\r\n`).
   - **Body** : Écrire les données brutes.
-- [ ] **3.3 Calcul du `Content-Length`** : Injecter automatiquement la taille exacte du body en octets.
+- [x] **3.3 Calcul du `Content-Length`** : Injecter automatiquement la taille exacte du body en octets.
 
 ---
 

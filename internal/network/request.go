@@ -2,7 +2,7 @@ package network
 
 import (
 	"errors"
-	"goserve/internal/network/lib"
+	"goserve/internal/lib"
 	"strconv"
 	"strings"
 )
@@ -27,6 +27,9 @@ const (
 	DELETE RequestMethod = "DELETE"
 	OPTIONS RequestMethod = "OPTIONS"
 	PATCH RequestMethod = "PATCH"
+	CONNECT RequestMethod = "CONNECT"
+	HEAD RequestMethod = "HEAD"
+	TRACE RequestMethod = "TRACE"
 	UNKNOWN RequestMethod = ""
 )
 
