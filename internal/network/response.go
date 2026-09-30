@@ -5,6 +5,7 @@ import (
 	"goserve/internal/constant"
 	"io"
 	"strconv"
+	"time"
 )
 
 const PROTOCOL = "HTTP/1.1"
@@ -33,6 +34,7 @@ func (res *Response) SetBody(body []byte) {
 
 func (res *Response) ToBytes() []byte {
 	tmp := make([]byte, 0)
+	res.loadGenericHeaders()
 	statusLine := fmt.Sprintf("%s %d %s\r\n", PROTOCOL, res.StatusCode, res.StatusCode.StatusText())
 	tmp = append(tmp, []byte(statusLine)...)
 	for key, value := range res.Headers {
@@ -44,6 +46,27 @@ func (res *Response) ToBytes() []byte {
 	}
 	return tmp
 }
+
+func (res *Response) loadGenericHeaders() {
+	if _, exists := res.Headers["Content-Type"]; !exists && len(res.Body) > 0 {
+		res.Headers["Content-Type"] = string(constant.TEXT)
+	}
+	if _, exists := res.Headers["Connection"]; !exists {
+		res.Headers["Connection"] = "close"
+	}
+	res.Headers["Date"] = time.Now().UTC().Format("Mon, 02 Jan 2006 15:04:05 GMT")
+}
+
+func (res *Response) SetJSON(body []byte) {
+	res.SetBody(body)
+	res.Headers["Content-Type"] = string(constant.JSON)
+}
+
+func (res *Response) SetHTML(body []byte) {
+	res.SetBody(body)
+	res.Headers["Content-Type"] = string(constant.HTML)
+}
+
 
 func (res *Response) WriteTo(w io.Writer) error {
 	_, err := w.Write(res.ToBytes())

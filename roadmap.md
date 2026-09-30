@@ -99,7 +99,7 @@ _L'objectif est de formater et envoyer une réponse conforme aux spécifications
 
 _L'objectif est de garantir l'interopérabilité avec les navigateurs et applications clientes._
 
-- [ ] **4.1 Headers standards** :
+- [x] **4.1 Headers standards** :
   - `Content-Type` (ex: `text/plain`, `application/json`, `text/html`).
   - `Date` (format HTTP standard RFC 1123).
   - `Connection` (`close` vs `keep-alive`).

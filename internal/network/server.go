@@ -9,12 +9,16 @@ import (
 
 type Server struct {
 	Port int
+	corsEnable bool
+	origins []string
 }
 
 func NewServer(port int) *Server {
 
 	return &Server{
 		Port: port,
+		corsEnable: false,
+		origins: make([]string, 0),
 	}
 }
 
@@ -32,6 +36,15 @@ func (s *Server) Start() error {
 			continue
 		}
 		go s.handleConnection(conn)
+	}
+}
+
+func (s *Server) AllowCors(origins ...string) {
+	s.corsEnable = true
+	if len(origins) > 0 {
+		s.origins = append(s.origins, origins...)
+	} else {
+		s.origins = append(s.origins, "*")
 	}
 }
 
