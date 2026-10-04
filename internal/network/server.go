@@ -48,6 +48,19 @@ func (s *Server) AllowCors(origins ...string) {
 	}
 }
 
+func (s *Server) getAllowOrigin(clientOrigin string) string {
+	for _, origin := range(s.origins) {
+		if origin == "*" || origin == clientOrigin {
+			if origin == "*" {
+				return "*"
+			} else {
+				return clientOrigin
+			}
+		}
+	}
+	return ""
+}
+
 func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
 
@@ -59,7 +72,19 @@ func (s *Server) handleConnection(conn net.Conn) {
 	if err != nil {
 		fmt.Printf(err.Error())
 	}
+
 	res := NewResponse()
-	res.SetBody([]byte("Hello World !"))
+	if s.corsEnable {
+		clientOrigin := request.Headers["origin"]
+		matched := s.getAllowOrigin(clientOrigin)
+		if matched != "" {
+			res.AddCorsHeaders(matched)
+		}
+	}
+	if request.Method == OPTIONS {
+		res.Preflight()
+		err = res.WriteTo(conn)
+		return
+	}
 	err = res.WriteTo(conn)
 }

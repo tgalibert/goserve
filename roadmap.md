@@ -103,7 +103,7 @@ _L'objectif est de garantir l'interopérabilité avec les navigateurs et applica
   - `Content-Type` (ex: `text/plain`, `application/json`, `text/html`).
   - `Date` (format HTTP standard RFC 1123).
   - `Connection` (`close` vs `keep-alive`).
-- [ ] **4.2 Gestion de CORS (Cross-Origin Resource Sharing)** :
+- [x] **4.2 Gestion de CORS (Cross-Origin Resource Sharing)** :
   - Gérer les requêtes de pré-vérification (**Preflight Requests**) via la méthode `OPTIONS`.
   - Headers à injecter :
     - `Access-Control-Allow-Origin` (ex: `*` ou origines spécifiques).

@@ -67,6 +67,20 @@ func (res *Response) SetHTML(body []byte) {
 	res.Headers["Content-Type"] = string(constant.HTML)
 }
 
+func (res *Response) Preflight() {
+	res.StatusCode = constant.StatusNoContent
+}
+
+func (res *Response) AddCorsHeaders(origin string) {
+	res.SetHeader("Access-Control-Allow-Origin", origin)
+	res.SetHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD")
+	res.SetHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	res.SetHeader("Access-Control-Max-Age", "86400")
+	if origin != "*" {
+		res.SetHeader("Vary", "Origin")
+	}
+}
+
 
 func (res *Response) WriteTo(w io.Writer) error {
 	_, err := w.Write(res.ToBytes())
