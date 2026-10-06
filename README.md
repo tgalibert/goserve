@@ -13,7 +13,7 @@
 
 ---
 
-## 📖 Overview
+## Overview
 
 **GoServe** is a complete HTTP/1.1 server implementation built purely on raw TCP sockets provided by the Go standard package `net`. It deliberately avoids high-level abstractions like `net/http` to demonstrate how network I/O buffering, protocol grammar parsing, response serialization, and routing engines operate at the lowest levels.
 
@@ -21,29 +21,29 @@ Whether you're studying protocol engineering, designing embedded micro-services,
 
 ---
 
-## ✨ Features
+## Features
 
-- ⚡ **Zero External Dependencies** : Pure Go standard library (`net`, `io`, `bytes`, `strings`, `strconv`, `time`).
-- 🔄 **Stateful Buffered I/O (`IoParser`)** : Prevents body over-reading on continuous TCP streams while eliminating redundant syscalls.
-- 📐 **RFC 9112 Compliant Request Parsing** :
-  - Strict Request Line validation (`METHOD`, `URI`, `PROTOCOL`).
-  - Safe query string extraction and path decoupling (`/items?page=1` $\rightarrow$ path + parameters map).
-  - Case-insensitive HTTP header normalization.
-  - Streaming body consumption using exact `Content-Length` accounting.
-- 🛣️ **Fast Hierarchical Router** :
-  - Grouped by `(Path, Method)` for $O(1)$ lookup performance.
-  - Automatic `404 Not Found` dispatching.
-  - RFC 9110 compliant `405 Method Not Allowed` with automatic `Allow` header injection.
-- 🌐 **Modern CORS Engine & Preflight Support** :
-  - Transparent `OPTIONS` preflight caching with `Access-Control-Max-Age`.
-  - Dynamic multi-origin matching with `Vary: Origin` protection.
-- 🎨 **Ergonomic Response Builder** :
-  - Chainable helper methods (`SetJSON`, `SetHTML`, `SetHeader`).
-  - Automatic `Content-Length`, `Date` (RFC 1123 GMT), and `Connection: close` formatting.
+- **Zero External Dependencies** : Pure Go standard library (`net`, `io`, `bytes`, `strings`, `strconv`, `time`).
+- **Stateful Buffered I/O (`IoParser`)** : Prevents body over-reading on continuous TCP streams while eliminating redundant syscalls.
+- **RFC 9112 Compliant Request Parsing** :
+- Strict Request Line validation (`METHOD`, `URI`, `PROTOCOL`).
+- Safe query string extraction and path decoupling (`/items?page=1` $\rightarrow$ path + parameters map).
+- Case-insensitive HTTP header normalization.
+- Streaming body consumption using exact `Content-Length` accounting.
+- **Fast Hierarchical Router** :
+- Grouped by `(Path, Method)` for $O(1)$ lookup performance.
+- Automatic `404 Not Found` dispatching.
+- RFC 9110 compliant `405 Method Not Allowed` with automatic `Allow` header injection.
+- **Modern CORS Engine & Preflight Support** :
+- Transparent `OPTIONS` preflight caching with `Access-Control-Max-Age`.
+- Dynamic multi-origin matching with `Vary: Origin` protection.
+- **Ergonomic Response Builder** :
+- Chainable helper methods (`SetJSON`, `SetHTML`, `SetHeader`).
+- Automatic `Content-Length`, `Date` (RFC 1123 GMT), and `Connection: close` formatting.
 
 ---
 
-## 🏛️ Architecture & Data Flow
+## Architecture & Data Flow
 
 ```
                       +-----------------------------+
@@ -178,11 +178,11 @@ curl -i http://localhost:8080/unknown
 
 ### `Server`
 
-| Method | Description |
-| :--- | :--- |
-| `NewServer(port int) *Server` | Creates a new server instance with an initialized router. |
-| `server.Start() error` | Binds the TCP listener and starts the concurrent accept loop. |
-| `server.AllowCors(origins ...string)` | Enables CORS. Accepts specific origins or defaults to `*`. |
+| Method                                | Description                                                   |
+| :------------------------------------ | :------------------------------------------------------------ |
+| `NewServer(port int) *Server`         | Creates a new server instance with an initialized router.     |
+| `server.Start() error`                | Binds the TCP listener and starts the concurrent accept loop. |
+| `server.AllowCors(origins ...string)` | Enables CORS. Accepts specific origins or defaults to `*`.    |
 
 ### `Router`
 
@@ -197,6 +197,7 @@ server.Router.PATCH(path string, handler HandleFunc)
 ```
 
 Where `HandleFunc` has the following signature:
+
 ```go
 type HandleFunc func(req *network.Request, res *network.Response)
 ```
@@ -237,14 +238,14 @@ res.SetHeader("X-Custom-Header", "value")
 
 ## 🛡️ HTTP Specification Compliance
 
-| Specification | Feature | Implementation |
-| :--- | :--- | :--- |
-| **RFC 9112 §3** | Request Line Syntax | Strict token extraction (`METHOD SP Target SP Version CRLF`) |
-| **RFC 9112 §5** | Header Parsing | Delimited by CRLF, case-insensitive mapping, empty line terminator |
-| **RFC 9112 §6** | Content-Length Body | Byte-exact streaming via stateful buffer accumulation |
-| **RFC 9110 §15.5.6** | Method Not Allowed | Status `405` with mandatory comma-separated `Allow` header |
-| **RFC 9110 §6.6.1** | Date Header | Automatic UTC timestamps formatted to RFC 1123 GMT |
-| **W3C CORS** | Preflight Options | Automatic `204 No Content` response with cached policy headers |
+| Specification        | Feature             | Implementation                                                     |
+| :------------------- | :------------------ | :----------------------------------------------------------------- |
+| **RFC 9112 §3**      | Request Line Syntax | Strict token extraction (`METHOD SP Target SP Version CRLF`)       |
+| **RFC 9112 §5**      | Header Parsing      | Delimited by CRLF, case-insensitive mapping, empty line terminator |
+| **RFC 9112 §6**      | Content-Length Body | Byte-exact streaming via stateful buffer accumulation              |
+| **RFC 9110 §15.5.6** | Method Not Allowed  | Status `405` with mandatory comma-separated `Allow` header         |
+| **RFC 9110 §6.6.1**  | Date Header         | Automatic UTC timestamps formatted to RFC 1123 GMT                 |
+| **W3C CORS**         | Preflight Options   | Automatic `204 No Content` response with cached policy headers     |
 
 ---
 
