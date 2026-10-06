@@ -118,9 +118,9 @@ _L'objectif est de garantir l'interopérabilité avec les navigateurs et applica
 
 _L'objectif est d'associer des routes à des fonctions de traitement (handlers)._
 
-- [ ] **5.1 Table de routage** : Créer une structure associant un couple `(Méthode, Chemin)` à un handler.
-- [ ] **5.2 Handlers** : Définir une signature type `func(req *Request, res *Response)`.
-- [ ] **5.3 Gestion des erreurs HTTP de base** :
+- [x] **5.1 Table de routage** : Créer une structure associant un couple `(Méthode, Chemin)` à un handler.
+- [x] **5.2 Handlers** : Définir une signature type `func(req *Request, res *Response)`.
+- [x] **5.3 Gestion des erreurs HTTP de base** :
   - Renvoyer `404 Not Found` si le chemin n'existe pas.
   - Renvoyer `405 Method Not Allowed` si le chemin existe mais pas avec cette méthode.
   - Renvoyer `400 Bad Request` en cas d'erreur de parsing de la requête.

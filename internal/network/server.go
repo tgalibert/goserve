@@ -2,6 +2,7 @@ package network
 
 import (
 	"fmt"
+	"goserve/internal/constant"
 	"goserve/internal/lib"
 	"io"
 	"net"
@@ -11,6 +12,7 @@ type Server struct {
 	Port int
 	corsEnable bool
 	origins []string
+	Router *Router
 }
 
 func NewServer(port int) *Server {
@@ -19,6 +21,7 @@ func NewServer(port int) *Server {
 		Port: port,
 		corsEnable: false,
 		origins: make([]string, 0),
+		Router: NewRouter(),
 	}
 }
 
@@ -67,24 +70,28 @@ func (s *Server) handleConnection(conn net.Conn) {
 	raw := io.Reader(conn)
 	parser := lib.NewIoParser(raw)
 	
-	request := NewRequest(parser)
-	err := request.Parse()
+	req := NewRequest(parser)
+	res := NewResponse()
+	err := req.Parse()
 	if err != nil {
 		fmt.Printf(err.Error())
+		res.StatusCode = constant.StatusBadRequest
+		res.SetBody([]byte("400 Bad Request"))
+		res.WriteTo(conn)
+		return
 	}
-
-	res := NewResponse()
 	if s.corsEnable {
-		clientOrigin := request.Headers["origin"]
+		clientOrigin := req.Headers["origin"]
 		matched := s.getAllowOrigin(clientOrigin)
 		if matched != "" {
 			res.AddCorsHeaders(matched)
 		}
 	}
-	if request.Method == OPTIONS {
+	if req.Method == OPTIONS {
 		res.Preflight()
 		err = res.WriteTo(conn)
 		return
 	}
+	s.Router.Serve(req, res)
 	err = res.WriteTo(conn)
 }
