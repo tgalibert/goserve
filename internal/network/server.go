@@ -1,11 +1,13 @@
 package network
 
 import (
+	"errors"
 	"fmt"
 	"goserve/internal/constant"
 	"goserve/internal/lib"
 	"io"
 	"net"
+	"time"
 )
 
 type Server struct {
@@ -13,6 +15,8 @@ type Server struct {
 	corsEnable bool
 	origins []string
 	Router *Router
+	ReadTimeout	time.Duration
+	WriteTimeout time.Duration
 }
 
 func NewServer(port int) *Server {
@@ -22,6 +26,8 @@ func NewServer(port int) *Server {
 		corsEnable: false,
 		origins: make([]string, 0),
 		Router: NewRouter(),
+		ReadTimeout: 30 * time.Second,
+		WriteTimeout: 30 * time.Second,
 	}
 }
 
@@ -64,6 +70,19 @@ func (s *Server) getAllowOrigin(clientOrigin string) string {
 	return ""
 }
 
+func (s *Server) SetReadTimeout(d time.Duration) {
+	s.ReadTimeout = d
+}
+
+func (s *Server) SetWriteTimeout(d time.Duration) {
+	s.WriteTimeout = d
+}
+
+func (s *Server) SetTimeout(d time.Duration) {
+	s.ReadTimeout = d
+	s.WriteTimeout = d
+}
+
 func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
 
@@ -72,11 +91,23 @@ func (s *Server) handleConnection(conn net.Conn) {
 	
 	req := NewRequest(parser)
 	res := NewResponse()
+	if s.ReadTimeout > 0 {
+		conn.SetReadDeadline(time.Now().Add(s.ReadTimeout))
+	}
 	err := req.Parse()
+
+	if s.WriteTimeout > 0 {
+		conn.SetWriteDeadline(time.Now().Add(s.WriteTimeout))
+	}
 	if err != nil {
-		fmt.Printf(err.Error())
-		res.StatusCode = constant.StatusBadRequest
-		res.SetBody([]byte("400 Bad Request"))
+		var netErr net.Error
+		if errors.As(err, &netErr) && netErr.Timeout() {
+			res.StatusCode = constant.StatusRequestTimeout
+			res.SetBody([]byte("408 Request Timeout"))
+		} else {
+			res.StatusCode = constant.StatusBadRequest
+			res.SetBody([]byte("400 Bad Request"))
+		}
 		res.WriteTo(conn)
 		return
 	}
@@ -93,5 +124,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 		return
 	}
 	s.Router.Serve(req, res)
+
 	err = res.WriteTo(conn)
 }
