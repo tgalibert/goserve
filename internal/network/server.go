@@ -85,45 +85,59 @@ func (s *Server) SetTimeout(d time.Duration) {
 
 func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
-
 	raw := io.Reader(conn)
 	parser := lib.NewIoParser(raw)
-	
-	req := NewRequest(parser)
-	res := NewResponse()
-	if s.ReadTimeout > 0 {
-		conn.SetReadDeadline(time.Now().Add(s.ReadTimeout))
-	}
-	err := req.Parse()
+	for {
+		req := NewRequest(parser)
+		res := NewResponse()
+		if s.ReadTimeout > 0 {
+			conn.SetReadDeadline(time.Now().Add(s.ReadTimeout))
+		}
+		err := req.Parse()
+		keepAlive := req.KeepAlive()
+		if !keepAlive {
+			res.SetHeader("Connection", "close")
+		}
 
-	if s.WriteTimeout > 0 {
-		conn.SetWriteDeadline(time.Now().Add(s.WriteTimeout))
-	}
-	if err != nil {
-		var netErr net.Error
-		if errors.As(err, &netErr) && netErr.Timeout() {
-			res.StatusCode = constant.StatusRequestTimeout
-			res.SetBody([]byte("408 Request Timeout"))
-		} else {
-			res.StatusCode = constant.StatusBadRequest
-			res.SetBody([]byte("400 Bad Request"))
+		if s.WriteTimeout > 0 {
+			conn.SetWriteDeadline(time.Now().Add(s.WriteTimeout))
 		}
-		res.WriteTo(conn)
-		return
-	}
-	if s.corsEnable {
-		clientOrigin := req.Headers["origin"]
-		matched := s.getAllowOrigin(clientOrigin)
-		if matched != "" {
-			res.AddCorsHeaders(matched)
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return
+			}
+			var netErr net.Error
+			if errors.As(err, &netErr) && netErr.Timeout() {
+				res.StatusCode = constant.StatusRequestTimeout
+				res.SetBody([]byte("408 Request Timeout"))
+			} else {
+				res.StatusCode = constant.StatusBadRequest
+				res.SetBody([]byte("400 Bad Request"))
+			}
+			res.SetHeader("Connection", "close")
+			res.WriteTo(conn)
+			return
 		}
-	}
-	if req.Method == OPTIONS {
-		res.Preflight()
+		if s.corsEnable {
+			clientOrigin := req.Headers["origin"]
+			matched := s.getAllowOrigin(clientOrigin)
+			if matched != "" {
+				res.AddCorsHeaders(matched)
+			}
+		}
+		if req.Method == OPTIONS {
+			res.Preflight()
+			err = res.WriteTo(conn)
+			if !keepAlive {
+				return
+			}
+			continue
+		}
+		s.Router.Serve(req, res)
+
 		err = res.WriteTo(conn)
-		return
+		if !keepAlive || err != nil {
+			return
+		}	
 	}
-	s.Router.Serve(req, res)
-
-	err = res.WriteTo(conn)
 }

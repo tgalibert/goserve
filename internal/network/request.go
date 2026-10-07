@@ -148,6 +148,14 @@ func (r *Request) parseHeaders() error {
 	return nil
 }
 
+func (r *Request) KeepAlive() bool {
+	h, exist := r.Headers["connection"]
+	if !exist {
+		return true
+	}
+	return !strings.EqualFold(strings.TrimSpace(h), "Close")
+}
+
 func (r *Request) parseBody() error {
 	_, exist := r.Headers["content-length"]
 	if !exist {
